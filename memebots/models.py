@@ -14,6 +14,9 @@ class TokenSnapshot:
     change_1h_pct: float = 0.0
     lp_locked_pct: float | None = None  # None means unknown
     lp_lock_days: float | None = None  # days to the earliest LP unlock; inf if burned
+    top10_holder_pct: float | None = None  # share held by the 10 biggest wallets, pools excluded
+    max_holder_pct: float | None = None
+    danger_risks: list[str] | None = None  # RugCheck's own "danger" flags
     whale_buys_sol: list[float] | None = None  # recent buy sizes; None means no trade feed
 
 

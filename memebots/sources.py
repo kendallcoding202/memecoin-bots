@@ -11,9 +11,16 @@ from .models import TokenSnapshot
 DEXSCREENER = "https://api.dexscreener.com"
 RUGCHECK = "https://api.rugcheck.xyz/v1"
 WSOL = "So11111111111111111111111111111111111111112"
-LOCK_CACHE_S = 600
+RUG_CACHE_S = 600
+UNKNOWN_RUG_DATA = {
+    "lp_locked_pct": None,
+    "lp_lock_days": None,
+    "top10_holder_pct": None,
+    "max_holder_pct": None,
+    "danger_risks": None,
+}
 
-_lock_cache: dict[str, tuple[float, tuple[float | None, float | None]]] = {}
+_rug_cache: dict[str, tuple[float, dict]] = {}
 
 
 def get_json(url: str, data: dict | None = None, timeout: float = 15, retries: int = 5):
@@ -54,24 +61,46 @@ def snapshots(mints: list[str]) -> dict[str, TokenSnapshot]:
     return out
 
 
-def add_lp_locks(snaps, min_liquidity_usd: float = 0):
-    """Look up LP locks, skipping tokens too shallow to pass the filter anyway (RugCheck is rate limited)."""
+def add_rug_data(snaps, min_liquidity_usd: float = 0):
+    """Add RugCheck data, skipping tokens too shallow to pass the filter anyway (RugCheck is rate limited)."""
     for snap in snaps:
         if snap.liquidity_usd >= min_liquidity_usd:
-            snap.lp_locked_pct, snap.lp_lock_days = lp_lock(snap.mint)
+            for key, value in rug_data(snap.mint).items():
+                setattr(snap, key, value)
 
 
-def lp_lock(mint: str, now: float | None = None) -> tuple[float | None, float | None]:
+def rug_data(mint: str, now: float | None = None) -> dict:
+    """LP lock and holder fields for a TokenSnapshot. All None when RugCheck can't be reached."""
     now = now or time.time()
-    hit = _lock_cache.get(mint)
-    if hit and now - hit[0] < LOCK_CACHE_S:
+    hit = _rug_cache.get(mint)
+    if hit and now - hit[0] < RUG_CACHE_S:
         return hit[1]
     try:
-        result = parse_lp_lock(get_json(f"{RUGCHECK}/tokens/{mint}/report"), now)
+        report = get_json(f"{RUGCHECK}/tokens/{mint}/report")
     except (OSError, ValueError):
-        return None, None
-    _lock_cache[mint] = (now, result)
+        return dict(UNKNOWN_RUG_DATA)
+    locked_pct, lock_days = parse_lp_lock(report, now)
+    result = {"lp_locked_pct": locked_pct, "lp_lock_days": lock_days, **parse_holders(report)}
+    _rug_cache[mint] = (now, result)
     return result
+
+
+def parse_holders(report: dict) -> dict:
+    """How concentrated the supply is, leaving out pools and lockers, which RugCheck labels."""
+    holders = report.get("topHolders")
+    if not holders:
+        return {"top10_holder_pct": None, "max_holder_pct": None, "danger_risks": None}
+    known = report.get("knownAccounts") or {}
+    pools = {addr for addr, info in known.items() if (info or {}).get("type") in ("AMM", "LOCKER")}
+    pcts = sorted(
+        (_num(h.get("pct")) for h in holders if h.get("owner") not in pools and h.get("address") not in pools),
+        reverse=True,
+    )
+    return {
+        "top10_holder_pct": sum(pcts[:10]),
+        "max_holder_pct": pcts[0] if pcts else 0.0,
+        "danger_risks": [r.get("name", "?") for r in report.get("risks") or [] if r.get("level") == "danger"],
+    }
 
 
 def parse_pairs(data) -> dict[str, dict]:

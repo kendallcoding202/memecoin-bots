@@ -18,7 +18,7 @@ def say(msg: str):
 
 def fetch(mints: list[str], filter_cfg: FilterConfig) -> dict:
     snaps = sources.snapshots(mints)
-    sources.add_lp_locks(snaps.values(), filter_cfg.min_liquidity_usd)
+    sources.add_rug_data(snaps.values(), filter_cfg.min_liquidity_usd)
     return snaps
 
 
@@ -94,6 +94,26 @@ def cmd_spy(args, filter_cfg):
     run(args.interval, portfolio, tick)
 
 
+def load_rug(histories, filter_cfg, skip: bool) -> dict[str, dict]:
+    if skip:
+        print("Skipping RugCheck (--no-rug-check): every token counts as locked and widely held.")
+        safe = dict(lp_locked_pct=100.0, lp_lock_days=float("inf"), top10_holder_pct=0.0, max_holder_pct=0.0, danger_risks=[])
+        return {h.mint: dict(safe) for h in histories}
+    rug = {h.mint: sources.rug_data(h.mint) for h in histories if h.liquidity_usd >= filter_cfg.min_liquidity_usd}
+    if rug and all(r["lp_locked_pct"] is None for r in rug.values()):
+        print("Warning: no RugCheck data (is api.rugcheck.xyz reachable?), so the filter will reject everything.")
+    return rug
+
+
+def print_stats(stats: dict):
+    for key, value in stats.items():
+        print(f"  {key:>18}: {value}")
+
+
+def fmt(ts: float) -> str:
+    return f"{datetime.fromtimestamp(ts):%b %d %H:%M}"
+
+
 def cmd_backtest(args, filter_cfg):
     from . import backtest, history
 
@@ -101,37 +121,74 @@ def cmd_backtest(args, filter_cfg):
     histories = history.load(args.days, args.pools, args.cache)
     if not histories:
         raise SystemExit("No pools with candle data.")
+    rug = load_rug(histories, filter_cfg, args.no_rug_check)
+    risk = RiskConfig(stop_loss_pct=args.stop, take_profit_pct=args.target)
 
-    if args.no_lock_check:
-        print("Skipping the LP-lock check (--no-lock-check): every token counts as locked.")
-        locks = {h.mint: (100.0, float("inf")) for h in histories}
-    else:
-        locks = {}
-        for h in histories:
-            if h.liquidity_usd >= filter_cfg.min_liquidity_usd:
-                locks[h.mint] = sources.lp_lock(h.mint)
-        if all(lock == (None, None) for lock in locks.values()):
-            print("Warning: no LP-lock data (is api.rugcheck.xyz reachable?), so the filter will reject everything.")
-
-    bot = Gambler(PaperPortfolio(RiskConfig()), filter_cfg)
-    result = backtest.replay(histories, locks, bot.wants_entry)
+    bot = Gambler(PaperPortfolio(risk), filter_cfg)
+    result = backtest.replay(histories, rug, bot.wants_entry, risk)
     start = min(h.candles[0].ts for h in histories)
     end = max(h.candles[-1].ts for h in histories)
-    print(f"\n{len(histories)} pools, {datetime.fromtimestamp(start):%b %d %H:%M} to {datetime.fromtimestamp(end):%b %d %H:%M}")
-    passing = sum(backtest.passes_filter(h, locks.get(h.mint, (None, None)), filter_cfg) for h in histories)
+    print(f"\n{len(histories)} pools, {fmt(start)} to {fmt(end)}")
+    passing = sum(backtest.passes_filter(h, rug.get(h.mint, {}), filter_cfg) for h in histories)
     print(f"{passing} of them pass the rug filter\n")
 
     print("Gambler (Bot One):")
     for trade in result.closed:
-        print(f"  {datetime.fromtimestamp(trade.opened_at):%b %d %H:%M}  {trade}")
-    for key, value in result.stats().items():
-        print(f"  {key:>18}: {value}")
+        print(f"  {fmt(trade.opened_at)}  {trade}")
+    print_stats(result.stats())
 
-    baseline = backtest.random_baseline(histories, locks, len(result.closed), filter_cfg)
+    baseline = backtest.random_baseline(histories, rug, len(result.closed), filter_cfg, risk)
     if baseline:
         print("\nRandom entries, same tokens/filter/sizing/stops:")
-        for key, value in backtest.summarize(baseline).items():
-            print(f"  {key:>18}: {value}")
+        print_stats(backtest.summarize(baseline))
+
+
+def cmd_backtest_spy(args, filter_cfg):
+    from . import backtest, history
+
+    print(f"Loading candles and ${args.min_trade_usd:g}+ trades for up to {args.pools} pools...")
+    histories = history.load(1.1, args.pools, args.cache, min_trade_usd=args.min_trade_usd)
+    trades = [t for h in histories for t in h.trades]
+    if not trades:
+        raise SystemExit("No trades found.")
+    rug = load_rug(histories, filter_cfg, args.no_rug_check)
+    risk = RiskConfig(stop_loss_pct=args.stop, take_profit_pct=args.target)
+
+    # Pick wallets on the first half of the trades, then test copying them on the second half.
+    first, last = min(t.ts for t in trades), max(t.ts for t in trades)
+    split = first + (last - first) / 2
+    scored = backtest.score_wallets(histories, until=split)
+    picked = backtest.proven(scored, args.wallets)
+    passing = sum(backtest.passes_filter(h, rug.get(h.mint, {}), filter_cfg) for h in histories)
+    print(f"\n{len(histories)} pools ({passing} pass the rug filter), {len(trades)} trades from {fmt(first)} to {fmt(last)}")
+    print(f"Picking wallets on {fmt(first)} to {fmt(split)}, testing on {fmt(split)} to {fmt(last)}")
+    print(f"{len(scored)} wallets made 3+ scorable buys; {len(picked)} count as proven (avg 1h return > 0, hit rate >= 50%)")
+    for s in picked[:10]:
+        print(
+            f"  {s['wallet'][:6]}..  {s['buys']} buys in {s['tokens']} tokens, "
+            f"avg 1h {s['avg_1h_pct']:+.0f}%, hit {s['hit_rate_pct']:.0f}%"
+        )
+    if not picked:
+        return
+
+    wallets = {s["wallet"] for s in picked}
+    runs = [
+        ("instant copy, your fill = their fill (best case)", True),
+        (f"realistic copy, {args.delay:g}s late, filled at that 5-min candle's close", False),
+    ]
+    for label, instant in runs:
+        signals = backtest.copy_signals(histories, wallets, split, args.delay, instant)
+        result = backtest.replay_copies(histories, signals, rug, filter_cfg, risk, start=split)
+        print(f"\nCopying the proven wallets, {label}: {sum(s.side == 'buy' for s in signals)} buy signals")
+        print_stats(result.stats())
+
+    others = [s["wallet"] for s in scored if s["wallet"] not in wallets]
+    baseline = backtest.random_wallet_baseline(
+        histories, rug, others, len(wallets), split, filter_cfg, risk, args.delay
+    )
+    if baseline:
+        print(f"\nCopying {len(wallets)} random other active wallets instead (realistic, 20 runs):")
+        print_stats(backtest.summarize(baseline))
 
 
 def main(argv=None):
@@ -153,10 +210,26 @@ def main(argv=None):
 
     bt = sub.add_parser("backtest", help="replay recent history through Bot One, against random entries")
     bt.add_argument("--days", type=float, default=3, help="how much history to replay")
-    bt.add_argument("--pools", type=int, default=60, help="how many recent pools to test on")
     bt.add_argument("--cache", default="runs/history.json", help="saved candles; delete to refetch")
-    bt.add_argument("--no-lock-check", action="store_true", help="treat every token as LP-locked")
+
+    bts = sub.add_parser("backtest-spy", help="pick wallets on the last ~24h, copy them, compare to random wallets")
+    bts.add_argument("--min-trade-usd", type=float, default=500, help="ignore trades smaller than this")
+    bts.add_argument("--wallets", type=int, default=20, help="how many proven wallets to copy")
+    bts.add_argument("--delay", type=float, default=30, help="seconds between their trade and ours")
+    bts.add_argument("--cache", default="runs/spy-history.json", help="saved candles and trades; delete to refetch")
+
+    for p in (bt, bts):
+        p.add_argument("--pools", type=int, default=60, help="how many recent pools to test on")
+        p.add_argument("--stop", type=float, default=RiskConfig.stop_loss_pct, help="stop loss, e.g. 0.25 for 25%%")
+        p.add_argument("--target", type=float, default=RiskConfig.take_profit_pct, help="take profit, e.g. 1.0 for 100%%")
+        p.add_argument("--no-rug-check", action="store_true", help="skip RugCheck: treat every token as safe")
 
     args = parser.parse_args(argv)
-    commands = {"scan": cmd_scan, "gambler": cmd_gambler, "spy": cmd_spy, "backtest": cmd_backtest}
+    commands = {
+        "scan": cmd_scan,
+        "gambler": cmd_gambler,
+        "spy": cmd_spy,
+        "backtest": cmd_backtest,
+        "backtest-spy": cmd_backtest_spy,
+    }
     commands[args.cmd](args, FilterConfig())

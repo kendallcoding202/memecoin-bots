@@ -14,6 +14,10 @@ class Verdict:
 
 def check(token: TokenSnapshot, cfg: FilterConfig = FilterConfig()) -> Verdict:
     """Unknown data counts as a fail: a token we can't check is a token we don't buy."""
+    # Shallow tokens never get a RugCheck lookup (it's rate limited), so stop at the liquidity reason.
+    if token.liquidity_usd < cfg.min_liquidity_usd:
+        return Verdict(False, [f"liquidity ${token.liquidity_usd:,.0f} < ${cfg.min_liquidity_usd:,.0f}"])
+
     reasons = []
 
     if token.lp_locked_pct is None or token.lp_lock_days is None:
@@ -24,8 +28,15 @@ def check(token: TokenSnapshot, cfg: FilterConfig = FilterConfig()) -> Verdict:
         if token.lp_lock_days < cfg.min_lp_lock_days:
             reasons.append(f"LP unlocks in {token.lp_lock_days:.0f} days")
 
-    if token.liquidity_usd < cfg.min_liquidity_usd:
-        reasons.append(f"liquidity ${token.liquidity_usd:,.0f} < ${cfg.min_liquidity_usd:,.0f}")
+    if token.top10_holder_pct is None or token.max_holder_pct is None:
+        reasons.append("holders unknown")
+    else:
+        if token.top10_holder_pct > cfg.max_top10_holder_pct:
+            reasons.append(f"top 10 wallets hold {token.top10_holder_pct:.0f}%")
+        if token.max_holder_pct > cfg.max_single_holder_pct:
+            reasons.append(f"one wallet holds {token.max_holder_pct:.0f}%")
+    if token.danger_risks:
+        reasons.append("RugCheck: " + ", ".join(token.danger_risks))
 
     if cfg.require_whale:
         whales = whale_buys(token, cfg)

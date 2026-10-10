@@ -8,7 +8,8 @@ from memebots.models import TokenSnapshot
 
 def token(**overrides):
     fields = dict(
-        mint="MEME", symbol="MEME", price_usd=0.01, liquidity_usd=100_000, lp_locked_pct=100, lp_lock_days=math.inf
+        mint="MEME", symbol="MEME", price_usd=0.01, liquidity_usd=100_000, lp_locked_pct=100, lp_lock_days=math.inf,
+        top10_holder_pct=12, max_holder_pct=3, danger_risks=[],
     )
     return TokenSnapshot(**{**fields, **overrides})
 
@@ -31,6 +32,18 @@ class FilterTest(unittest.TestCase):
 
     def test_shallow_liquidity_fails(self):
         self.assertFalse(check(token(liquidity_usd=8_000)).passed)
+
+    def test_concentrated_holders_fail(self):
+        self.assertEqual(check(token(top10_holder_pct=45)).reasons, ["top 10 wallets hold 45%"])
+        self.assertEqual(check(token(max_holder_pct=15)).reasons, ["one wallet holds 15%"])
+        self.assertIn("holders unknown", check(token(top10_holder_pct=None)).reasons)
+
+    def test_rugcheck_danger_flags_fail(self):
+        verdict = check(token(danger_risks=["Freeze Authority still enabled"]))
+        self.assertEqual(verdict.reasons, ["RugCheck: Freeze Authority still enabled"])
+
+    def test_shallow_token_reports_only_liquidity(self):
+        self.assertEqual(check(token(liquidity_usd=8_000, lp_lock_days=None)).reasons, ["liquidity $8,000 < $50,000"])
 
     def test_whale_check_when_required(self):
         cfg = FilterConfig(require_whale=True)

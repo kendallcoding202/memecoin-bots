@@ -24,6 +24,9 @@ def token(**overrides):
         change_1h_pct=20,
         lp_locked_pct=100,
         lp_lock_days=math.inf,
+        top10_holder_pct=12,
+        max_holder_pct=3,
+        danger_risks=[],
     )
     return TokenSnapshot(**{**fields, **overrides})
 

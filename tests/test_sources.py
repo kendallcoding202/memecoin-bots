@@ -1,7 +1,7 @@
 import math
 import unittest
 
-from memebots.sources import WSOL, parse_lp_lock, parse_pairs, snapshot_from_pair
+from memebots.sources import WSOL, parse_holders, parse_lp_lock, parse_pairs, snapshot_from_pair
 
 USDC = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
 NOW = 1_700_000_000
@@ -74,6 +74,30 @@ class RugCheckTest(unittest.TestCase):
     def test_unknown_and_rugged(self):
         self.assertEqual(parse_lp_lock({}, NOW), (None, None))
         self.assertEqual(parse_lp_lock({"rugged": True}, NOW), (0, 0))
+
+
+class HoldersTest(unittest.TestCase):
+    def test_skips_pools_and_reads_danger_flags(self):
+        report = {
+            "topHolders": [
+                {"owner": "POOL", "address": "a1", "pct": 40},
+                {"owner": "W1", "address": "a2", "pct": 8},
+                {"owner": "W2", "address": "a3", "pct": 5},
+                *[{"owner": f"X{i}", "address": f"x{i}", "pct": 1} for i in range(12)],
+            ],
+            "knownAccounts": {"POOL": {"name": "Pump Fun AMM", "type": "AMM"}},
+            "risks": [
+                {"name": "Mutable metadata", "level": "warn"},
+                {"name": "Freeze Authority still enabled", "level": "danger"},
+            ],
+        }
+        out = parse_holders(report)
+        self.assertEqual(out["max_holder_pct"], 8)
+        self.assertEqual(out["top10_holder_pct"], 8 + 5 + 8)
+        self.assertEqual(out["danger_risks"], ["Freeze Authority still enabled"])
+
+    def test_no_holder_data_is_unknown(self):
+        self.assertIsNone(parse_holders({})["top10_holder_pct"])
 
 
 if __name__ == "__main__":

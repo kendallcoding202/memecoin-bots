@@ -25,6 +25,15 @@ class Candle:
 
 
 @dataclass
+class Trade:
+    ts: float
+    wallet: str
+    side: str  # "buy" or "sell"
+    price_usd: float  # token price at the fill
+    volume_usd: float
+
+
+@dataclass
 class PoolHistory:
     pool: str
     mint: str
@@ -32,20 +41,38 @@ class PoolHistory:
     liquidity_usd: float  # today's liquidity: GeckoTerminal has no history for it
     created_at: float
     candles: list[Candle] = field(default_factory=list)
+    trades: list[Trade] = field(default_factory=list)
 
 
-def load(days: float, max_pools: int, cache_path: str | None = None) -> list[PoolHistory]:
-    """Pools plus their last `days` of candles, read from `cache_path` if it exists."""
+def load(
+    days: float, max_pools: int, cache_path: str | None = None, min_trade_usd: float | None = None
+) -> list[PoolHistory]:
+    """Pools plus their last `days` of candles, read from `cache_path` if it exists.
+
+    With `min_trade_usd`, also each pool's recent trades of at least that size. GeckoTerminal
+    only serves the last 300 trades within 24 hours, so that's as far back as wallet data goes.
+    """
     if cache_path and os.path.exists(cache_path):
         with open(cache_path) as f:
             raw = json.load(f)
-        return [PoolHistory(**{**p, "candles": [Candle(**c) for c in p["candles"]]}) for p in raw]
+        return [
+            PoolHistory(
+                **{
+                    **p,
+                    "candles": [Candle(**c) for c in p["candles"]],
+                    "trades": [Trade(**t) for t in p.get("trades", [])],
+                }
+            )
+            for p in raw
+        ]
 
     since = time.time() - days * 86400
     pools = find_pools(max_pools)
     for n, pool in enumerate(pools, 1):
-        print(f"  candles {n}/{len(pools)}: {pool.symbol}", flush=True)
+        print(f"  history {n}/{len(pools)}: {pool.symbol}", flush=True)
         pool.candles = fetch_candles(pool.pool, since)
+        if min_trade_usd is not None:
+            pool.trades = fetch_trades(pool, min_trade_usd)
     pools = [p for p in pools if p.candles]
 
     if cache_path:
@@ -88,6 +115,26 @@ def fetch_candles(pool: str, since: float) -> list[Candle]:
             break
         before = batch[0].ts
     return [c for _, c in sorted(candles.items()) if c.ts >= since]
+
+
+def fetch_trades(pool: PoolHistory, min_usd: float) -> list[Trade]:
+    return parse_trades(_gecko(f"/pools/{pool.pool}/trades?trade_volume_in_usd_greater_than={min_usd:g}"), pool.mint)
+
+
+def parse_trades(data: dict, mint: str) -> list[Trade]:
+    trades = []
+    for row in data.get("data") or []:
+        a = row.get("attributes") or {}
+        if a.get("to_token_address") == mint:
+            side, price = "buy", a.get("price_to_in_usd")
+        elif a.get("from_token_address") == mint:
+            side, price = "sell", a.get("price_from_in_usd")
+        else:
+            continue
+        trades.append(
+            Trade(_iso(a.get("block_timestamp")), a.get("tx_from_address") or "", side, _num(price), _num(a.get("volume_in_usd")))
+        )
+    return sorted(trades, key=lambda t: t.ts)
 
 
 def parse_pools(data: dict) -> list[PoolHistory]:

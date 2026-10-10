@@ -11,6 +11,10 @@ class FilterConfig:
     min_lp_locked_pct: float = 90
     # "keeps the few with deep enough liquidity". The post gives no number.
     min_liquidity_usd: float = 50_000
+    # Not in the post. Pump.fun LP is always burned, so on those tokens the lock check passes
+    # automatically and the real rug risk is a few wallets holding enough supply to dump.
+    max_top10_holder_pct: float = 30
+    max_single_holder_pct: float = 10
     # "watches where whales coming in with 200-300 SOL are loading"
     whale_min_sol: float = 200
     whale_max_sol: float = 300
