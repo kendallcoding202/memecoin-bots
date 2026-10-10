@@ -118,7 +118,7 @@ def cmd_backtest(args, filter_cfg):
     from . import backtest, history
 
     print(f"Loading {args.days:g} days of 5-minute candles for up to {args.pools} pools...")
-    histories = history.load(args.days, args.pools, args.cache)
+    histories = history.load(args.days, args.pools, args.cache, min_liquidity_usd=filter_cfg.min_liquidity_usd)
     if not histories:
         raise SystemExit("No pools with candle data.")
     rug = load_rug(histories, filter_cfg, args.no_rug_check)
