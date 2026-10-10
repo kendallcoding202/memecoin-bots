@@ -17,17 +17,19 @@ class Gambler:
         self.filter_cfg = filter_cfg
         self.cfg = cfg
 
+    def wants_entry(self, token: TokenSnapshot) -> bool:
+        return (
+            check(token, self.filter_cfg).passed
+            and self.cfg.min_change_1h_pct <= token.change_1h_pct <= self.cfg.max_change_1h_pct
+            and token.volume_1h_usd >= self.cfg.min_volume_1h_usd
+        )
+
     def on_snapshot(self, token: TokenSnapshot, now: float) -> str | None:
         """Returns a line to print when something happened, otherwise None."""
         if token.mint in self.portfolio.positions:
             closed = self.portfolio.mark(token.mint, token.price_usd, now)
             return str(closed) if closed else None
-
-        if not check(token, self.filter_cfg).passed:
-            return None
-        if not self.cfg.min_change_1h_pct <= token.change_1h_pct <= self.cfg.max_change_1h_pct:
-            return None
-        if token.volume_1h_usd < self.cfg.min_volume_1h_usd:
+        if not self.wants_entry(token):
             return None
 
         pos = self.portfolio.open(token.mint, token.symbol, token.price_usd, now)

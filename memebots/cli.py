@@ -94,6 +94,46 @@ def cmd_spy(args, filter_cfg):
     run(args.interval, portfolio, tick)
 
 
+def cmd_backtest(args, filter_cfg):
+    from . import backtest, history
+
+    print(f"Loading {args.days:g} days of 5-minute candles for up to {args.pools} pools...")
+    histories = history.load(args.days, args.pools, args.cache)
+    if not histories:
+        raise SystemExit("No pools with candle data.")
+
+    if args.no_lock_check:
+        print("Skipping the LP-lock check (--no-lock-check): every token counts as locked.")
+        locks = {h.mint: (100.0, float("inf")) for h in histories}
+    else:
+        locks = {}
+        for h in histories:
+            if h.liquidity_usd >= filter_cfg.min_liquidity_usd:
+                locks[h.mint] = sources.lp_lock(h.mint)
+        if all(lock == (None, None) for lock in locks.values()):
+            print("Warning: no LP-lock data (is api.rugcheck.xyz reachable?), so the filter will reject everything.")
+
+    bot = Gambler(PaperPortfolio(RiskConfig()), filter_cfg)
+    result = backtest.replay(histories, locks, bot.wants_entry)
+    start = min(h.candles[0].ts for h in histories)
+    end = max(h.candles[-1].ts for h in histories)
+    print(f"\n{len(histories)} pools, {datetime.fromtimestamp(start):%b %d %H:%M} to {datetime.fromtimestamp(end):%b %d %H:%M}")
+    passing = sum(backtest.passes_filter(h, locks.get(h.mint, (None, None)), filter_cfg) for h in histories)
+    print(f"{passing} of them pass the rug filter\n")
+
+    print("Gambler (Bot One):")
+    for trade in result.closed:
+        print(f"  {datetime.fromtimestamp(trade.opened_at):%b %d %H:%M}  {trade}")
+    for key, value in result.stats().items():
+        print(f"  {key:>18}: {value}")
+
+    baseline = backtest.random_baseline(histories, locks, len(result.closed), filter_cfg)
+    if baseline:
+        print("\nRandom entries, same tokens/filter/sizing/stops:")
+        for key, value in backtest.summarize(baseline).items():
+            print(f"  {key:>18}: {value}")
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(prog="memebots", description="Paper-trading memecoin bots.")
     sub = parser.add_subparsers(dest="cmd", required=True)
@@ -111,6 +151,12 @@ def main(argv=None):
     spy.add_argument("--interval", type=float, default=15, help="seconds between checks")
     spy.add_argument("--log", default="runs/spy.jsonl")
 
+    bt = sub.add_parser("backtest", help="replay recent history through Bot One, against random entries")
+    bt.add_argument("--days", type=float, default=3, help="how much history to replay")
+    bt.add_argument("--pools", type=int, default=60, help="how many recent pools to test on")
+    bt.add_argument("--cache", default="runs/history.json", help="saved candles; delete to refetch")
+    bt.add_argument("--no-lock-check", action="store_true", help="treat every token as LP-locked")
+
     args = parser.parse_args(argv)
-    commands = {"scan": cmd_scan, "gambler": cmd_gambler, "spy": cmd_spy}
+    commands = {"scan": cmd_scan, "gambler": cmd_gambler, "spy": cmd_spy, "backtest": cmd_backtest}
     commands[args.cmd](args, FilterConfig())
