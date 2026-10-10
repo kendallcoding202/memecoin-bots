@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+runs/
+.env
+wallets.txt
+# Never commit wallet keys
+id.json
+*keypair*.json

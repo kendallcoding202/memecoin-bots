@@ -1,0 +1,2 @@
+# One Solana wallet address per line. Lines starting with # are ignored.
+# Copy this file to wallets.txt (which git ignores) and add the wallets to watch.
