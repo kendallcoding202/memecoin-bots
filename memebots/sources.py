@@ -3,6 +3,7 @@
 import json
 import math
 import time
+import urllib.error
 import urllib.request
 
 from .models import TokenSnapshot
@@ -15,15 +16,23 @@ LOCK_CACHE_S = 600
 _lock_cache: dict[str, tuple[float, tuple[float | None, float | None]]] = {}
 
 
-def get_json(url: str, data: dict | None = None, timeout: float = 15):
+def get_json(url: str, data: dict | None = None, timeout: float = 15, retries: int = 5):
     headers = {"User-Agent": "memecoin-bots/0.1", "Accept": "application/json"}
     body = None
     if data is not None:
         body = json.dumps(data).encode()
         headers["Content-Type"] = "application/json"
     req = urllib.request.Request(url, data=body, headers=headers)
-    with urllib.request.urlopen(req, timeout=timeout) as resp:
-        return json.load(resp)
+    for attempt in range(retries + 1):
+        try:
+            with urllib.request.urlopen(req, timeout=timeout) as resp:
+                return json.load(resp)
+        except urllib.error.HTTPError as e:
+            # Free APIs rate limit hard. Back off and try again rather than failing the whole run.
+            if e.code != 429 or attempt == retries:
+                raise
+            wait = _num(e.headers.get("Retry-After")) or 2 ** (attempt + 1)
+            time.sleep(min(wait, 60))
 
 
 def latest_solana_mints(limit: int = 30) -> list[str]:
@@ -105,7 +114,12 @@ def parse_lp_lock(report: dict, now: float) -> tuple[float | None, float | None]
 
     lockers = report.get("lockers") or {}
     if isinstance(lockers, dict):
-        lockers = lockers.values()
+        lockers = list(lockers.values())
+    # Big tokens have lockers on many side pools. Only the main pool's lock matters, when we can tell which it is.
+    pool = main.get("pubkey")
+    on_main = [lk for lk in lockers if pool and pool in (lk.get("uri") or "")]
+    if on_main:
+        lockers = on_main
     unlocks = []
     for locker in lockers:
         ts = _num(locker.get("unlockDate"))

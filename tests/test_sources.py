@@ -55,6 +55,19 @@ class RugCheckTest(unittest.TestCase):
         report = {"markets": [{"lp": {"lpLockedPct": 95}}], "lockers": [{"unlockDate": (NOW + 86400) * 1000}]}
         self.assertEqual(parse_lp_lock(report, NOW), (95, 1))
 
+    def test_only_main_pool_lockers_count(self):
+        report = {
+            "markets": [
+                {"pubkey": "MAINPOOL", "lp": {"lpLockedPct": 99, "baseUSD": 1e6, "quoteUSD": 1e6}},
+                {"pubkey": "SIDEPOOL", "lp": {"lpLockedPct": 50, "baseUSD": 10, "quoteUSD": 10}},
+            ],
+            "lockers": {
+                "a": {"uri": "https://raydium.io/liquidity/?pool_id=MAINPOOL", "unlockDate": NOW + 200 * 86400},
+                "b": {"uri": "https://raydium.io/liquidity/?pool_id=SIDEPOOL", "unlockDate": NOW + 86400},
+            },
+        }
+        self.assertEqual(parse_lp_lock(report, NOW), (99, 200))
+
     def test_burned_lp_never_unlocks(self):
         self.assertEqual(parse_lp_lock({"markets": [{"lp": {"lpLockedPct": 100}}]}, NOW), (100, math.inf))
 
