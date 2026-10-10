@@ -86,6 +86,39 @@ What this says:
 
 These rows predate the holder check. With it, 19 tokens pass and Bot One still trails random: -39.8% against a +5.5% median with the 8% stop, and +12.4% against +25.9% with a 25% stop and 100% target.
 
+## Bot One over 3 weeks (Sep 19 – Oct 10, 2026)
+
+`python -m memebots backtest --days 21 --pools 200`: 65 pools deep enough to trade, 33 of which pass the full filter (lock, liquidity and holders), for 210 token-days of 5-minute candles. "Random" is 20 runs of random entries on the same tokens with the same filter, sizing and stops.
+
+| Stop | Target | Entry           | Bot One     | Trades | Random median (range) |
+| ---- | ------ | --------------- | ----------- | ------ | --------------------- |
+| 8%   | 80%    | up 5–60% in 1h  | **-79.5%**  | 838    | +19% (-34 to +191)    |
+| 8%   | 80%    | flat (0–5%)     | -84.8%      | 579    | +45% (-38 to +136)    |
+| 15%  | 80%    | up 5–60% in 1h  | -45.4%      | 446    | +65% (-10 to +247)    |
+| 15%  | 80%    | flat (0–5%)     | -40.7%      | 300    | +75% (-18 to +351)    |
+| 25%  | 100%   | up 5–60% in 1h  | +101%       | 201    | +142% (-9 to +513)    |
+| 25%  | 100%   | flat (0–5%)     | +60%        | 146    | +81% (-18 to +390)    |
+| 40%  | 150%   | up 5–60% in 1h  | **+328%**   | 77     | +213% (+4 to +503)    |
+| 40%  | 150%   | flat (0–5%)     | +90%        | 69     | +79% (+31 to +389)    |
+
+The 40% / 150% momentum row was the only one clearly ahead of random, so it was re-run against 50 random runs per period:
+
+| Period          | Bot One | Beat random in |
+| --------------- | ------- | -------------- |
+| All 3 weeks     | +328%   | 45 of 50 runs  |
+| Sep 19 – Sep 26 | +146%   | 50 of 50       |
+| Sep 26 – Oct 03 | -30%    | 0 of 50        |
+| Oct 03 – Oct 10 | +121%   | 43 of 50       |
+
+The profit isn't one lucky token: without the best one (JEANPHIL, +$816) it's still +247%.
+
+What this says:
+
+- **The post's style (tight stops, big targets) loses badly over three weeks.** With an 8% stop, Bot One lost about 80% while random entries gained.
+- **Wide stops are the only version with a hint of an edge.** With a 40% stop and 150% target, momentum entries beat random in two of three weeks.
+- **The absolute returns are not real.** Every token here is one that's trending or busy today, so random buys tripled your money. Nobody knew on Sep 19 which tokens would still be alive on Oct 10. Tokens that died aren't in the data, and a momentum bot is exactly the kind that buys their last pump. That bias likely helps momentum more than random entries, so even the edge over random may shrink in live trading.
+- **The best of 8 settings will look good partly by chance.** Treat 40% / 150% as the one worth paper trading forward, not as proven.
+
 ## Spy backtest results (Oct 9–10, 2026)
 
 `python -m memebots backtest-spy`: 60 pools and 13,339 trades of $500+. Wallets were picked on Oct 9 04:40–16:41 and tested on Oct 9 16:41 to Oct 10 04:43. 125 wallets made 3 or more buys that could be scored. 20 of them counted as proven: the price an hour after their buys was up on average, and up at least half the time. The test then copied those 20 wallets on the following 12 hours, which they weren't picked on.
