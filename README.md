@@ -32,7 +32,8 @@ The thread also has a lesson about position sizing. Most of the profit came from
 | Bot              | Command                         | What it does                                                                                                                                                                                                                                          |
 | ---------------- | ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Backtest         | `python -m memebots backtest`   | Replays the last few days of 5-minute candles (from GeckoTerminal) through Bot One, then runs random entries on the same tokens with the same filter and stops. The gap between the two is what the strategy itself adds. |
-| Filter           | `python -m memebots scan`       | Runs the rug filter on the newest Solana tokens on DexScreener (or on mints you pass in) and prints what passes and why the rest were dropped.                                                                                                     |
+| Spy backtest     | `python -m memebots backtest-spy` | Picks "proven" wallets from the first half of the last ~24h of $500+ trades, copies them on the second half (instantly and 30s late), and compares that to copying random active wallets. |
+| Filter           | `python -m memebots scan`       | Runs the rug filter on the newest Solana tokens on DexScreener (or on mints you pass in) and prints what passes and why the rest were dropped. Besides the post's lock and liquidity rules, it rejects tokens where the top 10 wallets hold over 30%, one wallet holds over 10%, or RugCheck raises a danger flag. |
 | One: Gambler     | `python -m memebots gambler`    | Buys filtered tokens that are up 5–60% in the last hour with $20k+ volume. Exits at an 8% stop or an 80% target.                                                                                                                                     |
 | Two: House       | not built                       | The post never says how this bot makes money. With $0 starting capital, it most likely collects fees on other people's trading, such as a launchpad's creator-fee share or a trading bot's referral fees. Once the mechanism is pinned down, it can be added. |
 | Three: Spy       | `python -m memebots spy`        | Watches the wallets in `wallets.txt` over Solana RPC. It copies their buys that pass the filter and sells when they sell.                                                                                                                         |
@@ -51,6 +52,8 @@ python -m memebots scan <mint> <mint>        # or specific ones
 python -m memebots gambler                   # paper-trade Bot One
 cp wallets.example.txt wallets.txt           # add wallets to copy, one per line
 python -m memebots spy                       # paper-trade Bot Three
+python -m memebots backtest --stop 0.25 --target 1.0   # backtest Bot One
+python -m memebots backtest-spy             # backtest Bot Three
 python -m unittest                           # tests
 ```
 
@@ -81,10 +84,29 @@ What this says:
 - **Don't read the positive numbers as an edge.** The tokens are ones that are still trending today, so they mostly went up over the window, and random buys made money too. Only the gap between Bot One and random counts, and it's negative or zero everywhere.
 - **Three days and 22 tokens is a small sample.** Treat this as a reason to rethink the entry rule, not as a final verdict.
 
+These rows predate the holder check. With it, 19 tokens pass and Bot One still trails random: -39.8% against a +5.5% median with the 8% stop, and +12.4% against +25.9% with a 25% stop and 100% target.
+
+## Spy backtest results (Oct 9–10, 2026)
+
+`python -m memebots backtest-spy`: 60 pools and 13,339 trades of $500+. Wallets were picked on Oct 9 04:40–16:41 and tested on Oct 9 16:41 to Oct 10 04:43. 125 wallets made 3 or more buys that could be scored. 20 of them counted as proven: the price an hour after their buys was up on average, and up at least half the time. The test then copied those 20 wallets on the following 12 hours, which they weren't picked on.
+
+| Stop | Target | Instant copy (best case) | 30s late (realistic) | 20 random wallets, median (range) |
+| ---- | ------ | ------------------------ | -------------------- | --------------------------------- |
+| 8%   | 80%    | -4.6%                    | **-15.4%**           | -4.1% (-20 to +7)                 |
+| 25%  | 100%   | +2.7%                    | -11.2%               | -6.0% (-21 to +10)                |
+| 40%  | 150%   | -6.6%                    | -10.5%               | -3.6% (-12 to +5)                 |
+
+What this says:
+
+- **Wallets that looked smart for 12 hours didn't stay smart.** Copying them with a realistic delay did worse than copying random active wallets at every setting. A handful of good buys is mostly luck.
+- **Even perfect, zero-delay copying only broke even.** That's the best case, and no real bot gets it.
+- **Being late is expensive.** The gap between instant and 30s-late copying was 4 to 14 points, which is the post's "late-flag bug" in numbers. The realistic run fills at the close of the 5-minute candle, so it overstates the delay for a fast bot. The truth sits somewhere between the two columns.
+- **The sample is small.** It covers 12 hours of testing, only trades of $500 or more (smaller sells are invisible), and only these 60 tokens. GeckoTerminal's free feed goes back about 24 hours. A longer test needs a paid data source or a few days of collecting trades.
+
 ## Not done yet
 
 - **Parsing is checked against live data, but only spot-checked.** DexScreener, RugCheck and Solana RPC responses were all confirmed on real data. Free endpoints rate-limit, and calls back off and retry when that happens.
-- **The LP-lock check passes nearly every pump.fun token.** Tokens that graduate from pump.fun get 100% burned LP automatically. Their real risk is holder concentration, and the filter doesn't check that yet.
+- **The LP-lock check passes nearly every pump.fun token.** Tokens that graduate from pump.fun get 100% burned LP automatically, which is why the holder check was added. The backtests can only use today's RugCheck data, not what the token looked like at the time.
 - **The whale check is off by default.** It needs a per-trade feed such as Birdeye or Helius, and none is wired up yet. The filter logic exists and is tested, and you can turn it on with `require_whale` in `config.py`.
 - **There is no live trading on purpose.** Run paper trading for a couple of weeks first. Only consider real money if the scorecard holds up across many trades, not just one good day.
 - **Bot Two isn't built.** See the table above.
