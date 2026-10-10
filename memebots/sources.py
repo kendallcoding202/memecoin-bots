@@ -35,11 +35,16 @@ def get_json(url: str, data: dict | None = None, timeout: float = 15, retries: i
             with urllib.request.urlopen(req, timeout=timeout) as resp:
                 return json.load(resp)
         except urllib.error.HTTPError as e:
-            # Free APIs rate limit hard. Back off and try again rather than failing the whole run.
-            if e.code != 429 or attempt == retries:
+            # Free APIs rate limit hard and hiccup often. Back off and try again rather than failing a long run.
+            if (e.code != 429 and e.code < 500) or attempt == retries:
                 raise
             wait = _num(e.headers.get("Retry-After")) or 2 ** (attempt + 1)
-            time.sleep(min(wait, 60))
+        except OSError as e:
+            # Timeouts and dropped connections are worth retrying; a host the network blocks is not.
+            if "Tunnel connection failed" in str(e) or attempt == retries:
+                raise
+            wait = 2 ** (attempt + 1)
+        time.sleep(min(wait, 60))
 
 
 def latest_solana_mints(limit: int = 30) -> list[str]:

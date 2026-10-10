@@ -1,7 +1,10 @@
+import io
 import math
 import unittest
+import urllib.error
+from unittest import mock
 
-from memebots.sources import WSOL, parse_holders, parse_lp_lock, parse_pairs, snapshot_from_pair
+from memebots.sources import WSOL, get_json, parse_holders, parse_lp_lock, parse_pairs, snapshot_from_pair
 
 USDC = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
 NOW = 1_700_000_000
@@ -74,6 +77,27 @@ class RugCheckTest(unittest.TestCase):
     def test_unknown_and_rugged(self):
         self.assertEqual(parse_lp_lock({}, NOW), (None, None))
         self.assertEqual(parse_lp_lock({"rugged": True}, NOW), (0, 0))
+
+
+class RetryTest(unittest.TestCase):
+    def response(self, body=b'{"ok": 1}'):
+        resp = mock.MagicMock()
+        resp.__enter__.return_value = io.BytesIO(body)
+        return resp
+
+    @mock.patch("memebots.sources.time.sleep")
+    def test_retries_timeouts_then_succeeds(self, _sleep):
+        with mock.patch("urllib.request.urlopen", side_effect=[TimeoutError("handshake"), self.response()]) as urlopen:
+            self.assertEqual(get_json("https://example.com"), {"ok": 1})
+        self.assertEqual(urlopen.call_count, 2)
+
+    @mock.patch("memebots.sources.time.sleep")
+    def test_blocked_host_fails_at_once(self, _sleep):
+        blocked = urllib.error.URLError("Tunnel connection failed: 403 Forbidden")
+        with mock.patch("urllib.request.urlopen", side_effect=blocked) as urlopen:
+            with self.assertRaises(urllib.error.URLError):
+                get_json("https://example.com")
+        self.assertEqual(urlopen.call_count, 1)
 
 
 class HoldersTest(unittest.TestCase):

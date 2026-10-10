@@ -75,9 +75,13 @@ def load(
     pools = find_pools(max_pools, min_liquidity_usd)
     for n, pool in enumerate(pools, 1):
         print(f"  history {n}/{len(pools)}: {pool.symbol}", flush=True)
-        pool.candles = fetch_candles(pool.pool, since)
-        if min_trade_usd is not None:
-            pool.trades = fetch_trades(pool, min_trade_usd)
+        try:
+            pool.candles = fetch_candles(pool.pool, since)
+            if min_trade_usd is not None:
+                pool.trades = fetch_trades(pool, min_trade_usd)
+        except (OSError, ValueError) as e:
+            print(f"    skipped after retries: {e}", flush=True)
+            pool.candles = []
     pools = [p for p in pools if p.candles]
 
     if cache_path:
