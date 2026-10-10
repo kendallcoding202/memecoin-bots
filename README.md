@@ -32,6 +32,7 @@ The thread also has a lesson about position sizing. Most of the profit came from
 | Bot              | Command                         | What it does                                                                                                                                                                                                                                          |
 | ---------------- | ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Backtest         | `python -m memebots backtest`   | Replays the last few days of 5-minute candles (from GeckoTerminal) through Bot One, then runs random entries on the same tokens with the same filter and stops. The gap between the two is what the strategy itself adds. |
+| Forward test     | `python -m memebots forward`    | One step of Bot One's live paper test, run every 4 hours by GitHub Actions. Tokens join when they're first seen trending, so ones that later die stay in. The scoreboard is the README on the [`paper-trading` branch](../../tree/paper-trading). |
 | Spy backtest     | `python -m memebots backtest-spy` | Picks "proven" wallets from the first half of the last ~24h of $500+ trades, copies them on the second half (instantly and 30s late), and compares that to copying random active wallets. |
 | Filter           | `python -m memebots scan`       | Runs the rug filter on the newest Solana tokens on DexScreener (or on mints you pass in) and prints what passes and why the rest were dropped. Besides the post's lock and liquidity rules, it rejects tokens where the top 10 wallets hold over 30%, one wallet holds over 10%, or RugCheck raises a danger flag. |
 | One: Gambler     | `python -m memebots gambler`    | Buys filtered tokens that are up 5–60% in the last hour with $20k+ volume. Exits at an 8% stop or an 80% target.                                                                                                                                     |
@@ -54,6 +55,7 @@ cp wallets.example.txt wallets.txt           # add wallets to copy, one per line
 python -m memebots spy                       # paper-trade Bot Three
 python -m memebots backtest --stop 0.25 --target 1.0   # backtest Bot One
 python -m memebots backtest-spy             # backtest Bot Three
+python -m memebots forward                  # one step of the forward paper test
 python -m unittest                           # tests
 ```
 
@@ -85,6 +87,18 @@ What this says:
 - **Three days and 22 tokens is a small sample.** Treat this as a reason to rethink the entry rule, not as a final verdict.
 
 These rows predate the holder check. With it, 19 tokens pass and Bot One still trails random: -39.8% against a +5.5% median with the 8% stop, and +12.4% against +25.9% with a 25% stop and 100% target.
+
+## Forward paper test (running)
+
+The backtests can only see tokens that are still alive today, which flatters them. The forward test removes that bias. Every 4 hours, `.github/workflows/paper-trade.yml` does the following:
+
+1. Finds SOL pools that are trending or busy right now, with $50k+ liquidity.
+2. Runs each new pool through the rug filter. Pools that pass are tracked from that moment on, for 5 days.
+3. Saves the finished 5-minute candles since the last run for every tracked pool.
+4. Replays Bot One (40% stop, 150% target, the only backtest setting that beat random) and the random baseline over everything collected so far. A token can't be bought before it was first seen.
+5. Commits the data and a scoreboard to the `paper-trading` branch.
+
+Fills use the same rules as the backtest. To run it yourself, use `python -m memebots forward`, or trigger the workflow from the Actions tab. Each run takes a few minutes. Running every 4 hours stays inside the 2,000 free Actions minutes a month for private repos.
 
 ## Bot One over 3 weeks (Sep 19 – Oct 10, 2026)
 

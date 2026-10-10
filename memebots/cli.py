@@ -1,6 +1,7 @@
-"""Command line: python -m memebots scan | gambler | spy"""
+"""Command line: python -m memebots scan | gambler | spy | backtest | backtest-spy | forward"""
 
 import argparse
+import os
 import time
 from datetime import datetime
 
@@ -191,6 +192,19 @@ def cmd_backtest_spy(args, filter_cfg):
         print_stats(backtest.summarize(baseline))
 
 
+def cmd_forward(args, filter_cfg):
+    from . import forward
+
+    now = time.time()
+    index = forward.update(args.data, filter_cfg, now)
+    risk = RiskConfig(stop_loss_pct=args.stop, take_profit_pct=args.target)
+    text = forward.report(args.data, index, risk, filter_cfg=filter_cfg, now=now)
+    os.makedirs(os.path.dirname(args.report) or ".", exist_ok=True)
+    with open(args.report, "w") as f:
+        f.write(text)
+    print(text)
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(prog="memebots", description="Paper-trading memecoin bots.")
     sub = parser.add_subparsers(dest="cmd", required=True)
@@ -224,6 +238,13 @@ def main(argv=None):
         p.add_argument("--target", type=float, default=RiskConfig.take_profit_pct, help="take profit, e.g. 1.0 for 100%%")
         p.add_argument("--no-rug-check", action="store_true", help="skip RugCheck: treat every token as safe")
 
+    fw = sub.add_parser("forward", help="one step of Bot One's forward paper test; run it on a schedule")
+    fw.add_argument("--data", default="paper/data", help="where tracked pools and candles are kept")
+    fw.add_argument("--report", default="paper/README.md", help="where to write the scoreboard")
+    # The only setting that beat random entries over the 3-week backtest. See README.
+    fw.add_argument("--stop", type=float, default=0.40, help="stop loss, e.g. 0.40 for 40%%")
+    fw.add_argument("--target", type=float, default=1.5, help="take profit, e.g. 1.5 for 150%%")
+
     args = parser.parse_args(argv)
     commands = {
         "scan": cmd_scan,
@@ -231,5 +252,6 @@ def main(argv=None):
         "spy": cmd_spy,
         "backtest": cmd_backtest,
         "backtest-spy": cmd_backtest_spy,
+        "forward": cmd_forward,
     }
     commands[args.cmd](args, FilterConfig())

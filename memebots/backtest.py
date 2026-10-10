@@ -54,7 +54,10 @@ def replay(
     rug: dict[str, dict],
     wants_entry: Callable[[TokenSnapshot], bool],
     risk: RiskConfig = RiskConfig(),
+    not_before: dict[str, float] | None = None,
+    close_at_end: bool = True,
 ) -> PaperPortfolio:
+    """`not_before` maps a mint to the earliest time it may be bought (the forward test's first sighting)."""
     portfolio = PaperPortfolio(risk)
     timestamps = {h.mint: [c.ts for c in h.candles] for h in histories}
     events = sorted(((c.ts, h, i) for h in histories for i, c in enumerate(h.candles)), key=lambda e: e[0])
@@ -66,11 +69,14 @@ def replay(
         if h.mint in portfolio.positions:
             _exit_or_mark(portfolio, h.mint, candle)
             continue
+        if not_before and candle.ts < not_before.get(h.mint, 0):
+            continue
         snap = snapshot_at(h, timestamps[h.mint], i, rug.get(h.mint, {}))
         if snap and wants_entry(snap):
             portfolio.open(h.mint, h.symbol, candle.close, candle.ts)
 
-    _close_all(portfolio, last)
+    if close_at_end:
+        _close_all(portfolio, last)
     return portfolio
 
 
@@ -81,12 +87,16 @@ def random_baseline(
     filter_cfg: FilterConfig = FilterConfig(),
     risk: RiskConfig = RiskConfig(),
     runs: int = 20,
+    not_before: dict[str, float] | None = None,
+    close_at_end: bool = True,
 ) -> list[PaperPortfolio]:
     """Random entries on filter-passing candles, tuned to make about as many trades as the strategy."""
     eligible = 0
     for h in histories:
         timestamps = [c.ts for c in h.candles]
         for i in range(len(h.candles)):
+            if not_before and h.candles[i].ts < not_before.get(h.mint, 0):
+                continue
             snap = snapshot_at(h, timestamps, i, rug.get(h.mint, {}))
             eligible += bool(snap and check(snap, filter_cfg).passed)
     if not eligible or not target_trades:
@@ -95,7 +105,16 @@ def random_baseline(
     results = []
     for seed in range(runs):
         rng = random.Random(seed)
-        results.append(replay(histories, rug, lambda s: check(s, filter_cfg).passed and rng.random() < p, risk))
+        results.append(
+            replay(
+                histories,
+                rug,
+                lambda s: check(s, filter_cfg).passed and rng.random() < p,
+                risk,
+                not_before,
+                close_at_end,
+            )
+        )
     return results
 
 

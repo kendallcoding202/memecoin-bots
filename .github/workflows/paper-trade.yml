@@ -1,0 +1,45 @@
+# Bot One's forward paper test. Every 4 hours: pick up newly trending tokens, save the latest
+# 5-minute candles, re-score Bot One against random entries, and commit the results to the
+# paper-trading branch. The scoreboard is that branch's README. Fake money only, no wallet.
+name: Paper trade Bot One
+
+on:
+  schedule:
+    - cron: "23 */4 * * *" # GitHub can start scheduled runs a few minutes late
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: paper-trading
+  cancel-in-progress: false
+
+jobs:
+  forward:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check out the results branch
+        uses: actions/checkout@v4
+        with:
+          ref: paper-trading
+          path: paper
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run one step of the forward test
+        run: python -m memebots forward --data paper/data --report paper/README.md
+
+      - name: Save results
+        working-directory: paper
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -q -m "Paper trading update $(date -u '+%b %d %H:%M') UTC" || exit 0
+          git push

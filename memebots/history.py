@@ -91,10 +91,10 @@ def load(
     return pools
 
 
-def find_pools(max_pools: int, min_liquidity_usd: float = 0) -> list[PoolHistory]:
+def find_pools(max_pools: int, min_liquidity_usd: float = 0, min_age_h: float = MIN_POOL_AGE_H) -> list[PoolHistory]:
     """SOL-quoted pools launched within the last month from GeckoTerminal's trending and busiest lists.
 
-    Brand-new pools are skipped: with minutes of history there's nothing to replay.
+    The backtest skips brand-new pools, which have nothing to replay. The forward test takes them.
     """
     now = time.time()
     paths = [f"/trending_pools?page={p}&duration={d}" for d in ("24h", "6h", "1h") for p in range(1, 6)] + [
@@ -105,7 +105,7 @@ def find_pools(max_pools: int, min_liquidity_usd: float = 0) -> list[PoolHistory
         for pool in parse_pools(_gecko(path)):
             age = now - pool.created_at
             if (
-                MIN_POOL_AGE_H * 3600 <= age <= MAX_POOL_AGE_DAYS * 86400
+                min_age_h * 3600 <= age <= MAX_POOL_AGE_DAYS * 86400
                 and pool.liquidity_usd >= min_liquidity_usd
                 and pool.mint not in found
             ):

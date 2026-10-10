@@ -6,3 +6,5 @@ wallets.txt
 # Never commit wallet keys
 id.json
 *keypair*.json
+# The forward test checks its results branch out here (see .github/workflows/paper-trade.yml)
+paper/
