@@ -205,6 +205,17 @@ def cmd_forward(args, filter_cfg):
     print(text)
 
 
+def cmd_launches(args, filter_cfg):
+    from . import launches
+
+    if args.action == "collect":
+        print(f"Recording pump.fun launches for {args.minutes:g} minutes into {args.cohort}...")
+        cohort = launches.collect(args.cohort, args.minutes)
+        print(f"{len(cohort)} launches recorded. Run `launches measure` about a day later.")
+    else:
+        print_stats(launches.measure(args.cohort))
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(prog="memebots", description="Paper-trading memecoin bots.")
     sub = parser.add_subparsers(dest="cmd", required=True)
@@ -245,8 +256,14 @@ def main(argv=None):
     fw.add_argument("--stop", type=float, default=0.40, help="stop loss, e.g. 0.40 for 40%%")
     fw.add_argument("--target", type=float, default=1.5, help="take profit, e.g. 1.5 for 150%%")
 
+    ls = sub.add_parser("launches", help="study what pump.fun launches earn their creators")
+    ls.add_argument("action", choices=["collect", "measure"])
+    ls.add_argument("--cohort", default="research/pumpfun-cohort.json", help="where the cohort is saved")
+    ls.add_argument("--minutes", type=float, default=120, help="how long to collect launches")
+
     args = parser.parse_args(argv)
     commands = {
+        "launches": cmd_launches,
         "scan": cmd_scan,
         "gambler": cmd_gambler,
         "spy": cmd_spy,
