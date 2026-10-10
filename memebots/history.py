@@ -11,6 +11,7 @@ from .sources import WSOL, get_json
 GECKO = "https://api.geckoterminal.com/api/v2/networks/solana"
 CALL_GAP_S = 2.1  # stays under the free tier's rate limit
 MAX_POOL_AGE_DAYS = 30  # older than this isn't a memecoin launch any more
+MIN_POOL_AGE_H = 6
 
 
 @dataclass
@@ -55,17 +56,19 @@ def load(days: float, max_pools: int, cache_path: str | None = None) -> list[Poo
 
 
 def find_pools(max_pools: int) -> list[PoolHistory]:
-    """Recently launched SOL-quoted pools from GeckoTerminal's new, trending and top-volume lists."""
-    cutoff = time.time() - MAX_POOL_AGE_DAYS * 86400
-    paths = (
-        [f"/new_pools?page={p}" for p in range(1, 6)]
-        + [f"/trending_pools?page={p}" for p in range(1, 6)]
-        + [f"/pools?page={p}&sort=h24_volume_usd_desc" for p in range(1, 6)]
-    )
+    """SOL-quoted pools launched within the last month from GeckoTerminal's trending and top-volume lists.
+
+    Brand-new pools are skipped: with minutes of history there's nothing to replay.
+    """
+    now = time.time()
+    paths = [f"/trending_pools?page={p}&duration={d}" for d in ("24h", "6h") for p in range(1, 6)] + [
+        f"/pools?page={p}&sort=h24_volume_usd_desc" for p in range(1, 11)
+    ]
     found: dict[str, PoolHistory] = {}
     for path in paths:
         for pool in parse_pools(_gecko(path)):
-            if pool.created_at >= cutoff and pool.mint not in found:
+            age = now - pool.created_at
+            if MIN_POOL_AGE_H * 3600 <= age <= MAX_POOL_AGE_DAYS * 86400 and pool.mint not in found:
                 found[pool.mint] = pool
         if len(found) >= max_pools:
             break

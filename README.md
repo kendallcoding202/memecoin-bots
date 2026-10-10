@@ -62,9 +62,29 @@ export SOLANA_RPC_URL="https://mainnet.helius-rpc.com/?api-key=YOUR_KEY"
 
 All thresholds are in `memebots/config.py`.
 
+## Backtest results (Oct 7–10, 2026)
+
+`python -m memebots backtest --days 3 --pools 60`: 60 SOL pools between 6 hours and 30 days old, 22 of which passed the rug filter. Every row starts with $1,000. "Random" uses the same tokens, filter, sizing and stops, with random entry times (20 runs).
+
+| Stop | Target | Bot One entry   | Bot One return | Trades | Win rate | Random median (range) |
+| ---- | ------ | --------------- | -------------- | ------ | -------- | --------------------- |
+| 8%   | 80%    | up 5–60% in 1h  | **-42.5%**     | 151    | 8%       | +5% (-27 to +55)      |
+| 15%  | 80%    | up 5–60% in 1h  | -40.2%         | 86     | 15%      | +17% (-23 to +62)     |
+| 25%  | 100%   | up 5–60% in 1h  | -1.5%          | 45     | 24%      | +30% (-20 to +114)    |
+| 40%  | 150%   | up 5–60% in 1h  | +13.7%         | 17     | 35%      | +28% (-12 to +68)     |
+| 40%  | 150%   | flat (0–5%)     | +32.6%         | 12     | 50%      | +30% (-3 to +80)      |
+
+What this says:
+
+- **Bot One's momentum entry did worse than random entries at every stop size.** Buying something that's already up 5–60% in the hour mostly means buying near a local top.
+- **An 8% stop is far too tight for memecoins.** Ordinary 5-minute swings hit it constantly (138 of the 151 trades were stopped out).
+- **Don't read the positive numbers as an edge.** The tokens are ones that are still trending today, so they mostly went up over the window, and random buys made money too. Only the gap between Bot One and random counts, and it's negative or zero everywhere.
+- **Three days and 22 tokens is a small sample.** Treat this as a reason to rethink the entry rule, not as a final verdict.
+
 ## Not done yet
 
-- **The API calls are untested against the live services.** The DexScreener, RugCheck, and Solana RPC parsing was written against their documented responses and is covered by tests on sample data. The environment it was built in couldn't reach those services, though. Run `scan` once and check that the output looks right.
+- **Parsing is checked against live data, but only spot-checked.** DexScreener, RugCheck and Solana RPC responses were all confirmed on real data. Free endpoints rate-limit, and calls back off and retry when that happens.
+- **The LP-lock check passes nearly every pump.fun token.** Tokens that graduate from pump.fun get 100% burned LP automatically. Their real risk is holder concentration, and the filter doesn't check that yet.
 - **The whale check is off by default.** It needs a per-trade feed such as Birdeye or Helius, and none is wired up yet. The filter logic exists and is tested, and you can turn it on with `require_whale` in `config.py`.
 - **There is no live trading on purpose.** Run paper trading for a couple of weeks first. Only consider real money if the scorecard holds up across many trades, not just one good day.
 - **Bot Two isn't built.** See the table above.
