@@ -32,6 +32,7 @@ The thread also has a lesson about position sizing. Most of the profit came from
 | Bot              | Command                         | What it does                                                                                                                                                                                                                                          |
 | ---------------- | ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Backtest         | `python -m memebots backtest`   | Replays the last few days of 5-minute candles (from GeckoTerminal) through Bot One, then runs random entries on the same tokens with the same filter and stops. The gap between the two is what the strategy itself adds. |
+| Launch study     | `python -m memebots launches collect` / `measure` | What creating a pump.fun coin earns its creator. Records launches minutes after they appear, then a day later totals each coin's trading volume and applies pump.fun's creator fees. |
 | Forward test     | `python -m memebots forward`    | One step of Bot One's live paper test, run every 4 hours by GitHub Actions. Tokens join when they're first seen trending, so ones that later die stay in. The scoreboard is the README on the [`paper-trading` branch](../../tree/paper-trading). |
 | Spy backtest     | `python -m memebots backtest-spy` | Picks "proven" wallets from the first half of the last ~24h of $500+ trades, copies them on the second half (instantly and 30s late), and compares that to copying random active wallets. |
 | Filter           | `python -m memebots scan`       | Runs the rug filter on the newest Solana tokens on DexScreener (or on mints you pass in) and prints what passes and why the rest were dropped. Besides the post's lock and liquidity rules, it rejects tokens where the top 10 wallets hold over 30%, one wallet holds over 10%, or RugCheck raises a danger flag. |
@@ -56,6 +57,8 @@ python -m memebots spy                       # paper-trade Bot Three
 python -m memebots backtest --stop 0.25 --target 1.0   # backtest Bot One
 python -m memebots backtest-spy             # backtest Bot Three
 python -m memebots forward                  # one step of the forward paper test
+python -m memebots launches collect         # record pump.fun launches (2 hours by default)
+python -m memebots launches measure         # ~a day later: what each one earned its creator
 python -m unittest                           # tests
 ```
 
@@ -149,6 +152,29 @@ What this says:
 - **Even perfect, zero-delay copying only broke even.** That's the best case, and no real bot gets it.
 - **Being late is expensive.** The gap between instant and 30s-late copying was 4 to 14 points, which is the post's "late-flag bug" in numbers. The realistic run fills at the close of the 5-minute candle, so it overstates the delay for a fast bot. The truth sits somewhere between the two columns.
 - **The sample is small.** It covers 12 hours of testing, only trades of $500 or more (smaller sells are invisible), and only these 60 tokens. GeckoTerminal's free feed goes back about 24 hours. A longer test needs a paid data source or a few days of collecting trades.
+
+## Pump.fun launch study: what a creator earns (Oct 10–11, 2026)
+
+This tests the post's "Bot Two – House" idea: launching coins and earning the creator's cut of trading. 736 pump.fun launches were recorded 1–6 minutes after creation (Oct 10, 19:17–21:12 UTC), so coins that flopped are counted. Each was measured about 22 hours later (median). Creator earnings use pump.fun's published fees: 0.30% of bonding-curve trading, and 0.05–0.95% after graduation (the table uses the 0.5% midpoint). Data: `research/pumpfun-cohort.json`.
+
+| Creator earnings in the first ~day | |
+| --- | --- |
+| Median launch | **$1.11** |
+| Top 10% earned at least | $22 |
+| Top 1% earned at least | $441 (between $229 and $726 depending on the post-graduation rate) |
+| Best coin | $1,848 (between $508 and $3,485) |
+| Average per launch | $19 (between $11 and $27) |
+| Earned over $10 / $100 / $1,000 | 15% / 3.1% / 0.3% (2 coins) |
+| Graduated | 2.6% (19 coins); their median was about $365 |
+| Median trading volume | $370 |
+
+The top 1% of coins (7 launches) took 43% of all creator fees, and the top 10% took 89%.
+
+What this says:
+
+- **The typical launch earns its creator about a dollar.** Nearly all the money goes to the few coins that graduate.
+- **It's an attention business.** Being in the top 2–3% takes a reason for people to trade the coin: a community, a meme that spreads, timing. Code is not the hard part.
+- **Caveats.** Volume is DexScreener's and GeckoTerminal's 24-hour total, so the last-launched coins had about 22 hours rather than a full day. The post-graduation fee is a range, not a measured number. Much of the volume is bots, though the creator is paid on it all. Many launches in the sample come from bots that spray out coins, so a deliberate launch should do better than the median. This is one 2-hour window on one weekend.
 
 ## Not done yet
 

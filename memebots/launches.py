@@ -69,12 +69,31 @@ def measure(path: str) -> dict:
         data = sources.get_json(f"{sources.DEXSCREENER}/tokens/v1/solana/{','.join(mints[i : i + 30])}")
         for mint, volumes in parse_volumes(data).items():
             found[mint] = volumes
+    # DexScreener drops a coin's pump.fun pair once it graduates, which would leave out the
+    # launch-phase trading of exactly the coins that did best. GeckoTerminal still has the pool.
+    graduates = {cohort[m]["pool"]: m for m, (bonding, grad) in found.items() if grad > 0 and bonding == 0}
+    for pool, volume in bonding_volumes(list(graduates)).items():
+        mint = graduates.get(pool)
+        if mint:
+            found[mint] = (volume, found[mint][1])
     now = time.time()
     for mint, entry in cohort.items():
         bonding, graduated = found.get(mint, (0.0, 0.0))
         entry.update(measured_at=now, bonding_volume_usd=bonding, graduated_volume_usd=graduated, listed=mint in found)
     save(path, cohort)
     return summarize(list(cohort.values()))
+
+
+def bonding_volumes(pools: list[str]) -> dict[str, float]:
+    """24h volume of pump.fun bonding-curve pools, by pool address, from GeckoTerminal."""
+    out = {}
+    for i in range(0, len(pools), 30):
+        data = _gecko(f"/pools/multi/{','.join(pools[i : i + 30])}")
+        for row in data.get("data") or []:
+            attrs = row.get("attributes") or {}
+            if attrs.get("address"):
+                out[attrs["address"]] = sources._num((attrs.get("volume_usd") or {}).get("h24"))
+    return out
 
 
 def parse_volumes(data) -> dict[str, tuple[float, float]]:

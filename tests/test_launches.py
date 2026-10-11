@@ -1,4 +1,7 @@
+import os
+import tempfile
 import unittest
+from unittest import mock
 
 from memebots import launches
 
@@ -28,6 +31,31 @@ class LaunchesTest(unittest.TestCase):
             {"baseToken": {"address": "B"}, "dexId": "pumpfun", "volume": {"h24": 12.5}},
         ]
         self.assertEqual(launches.parse_volumes(pairs), {"A": (1000, 50_000), "B": (12.5, 0)})
+
+    def test_measure_recovers_graduates_launch_volume(self):
+        # DexScreener lists only the PumpSwap pair for a graduated coin, so its bonding-curve
+        # volume has to come from GeckoTerminal's record of the original pool.
+        cohort = {
+            "GRAD": {"name": "G", "pool": "POOL_GRAD", "created_at": 0, "seen_at": 60},
+            "FLOP": {"name": "F", "pool": "POOL_FLOP", "created_at": 0, "seen_at": 60},
+        }
+        dex = [
+            {"baseToken": {"address": "GRAD"}, "dexId": "pumpswap", "volume": {"h24": 90_000}},
+            {"baseToken": {"address": "FLOP"}, "dexId": "pumpfun", "volume": {"h24": 40}},
+        ]
+        gecko = {"data": [{"attributes": {"address": "POOL_GRAD", "volume_usd": {"h24": "25000.5"}}}]}
+        with tempfile.TemporaryDirectory() as d:
+            path = os.path.join(d, "cohort.json")
+            launches.save(path, cohort)
+            with (
+                mock.patch("memebots.sources.get_json", return_value=dex),
+                mock.patch("memebots.launches._gecko", return_value=gecko) as gecko_call,
+            ):
+                launches.measure(path)
+            measured = launches.load(path)
+        gecko_call.assert_called_once_with("/pools/multi/POOL_GRAD")
+        self.assertEqual((measured["GRAD"]["bonding_volume_usd"], measured["GRAD"]["graduated_volume_usd"]), (25000.5, 90_000))
+        self.assertEqual((measured["FLOP"]["bonding_volume_usd"], measured["FLOP"]["graduated_volume_usd"]), (40, 0))
 
     def test_creator_fees(self):
         entry = {"bonding_volume_usd": 10_000, "graduated_volume_usd": 100_000}
