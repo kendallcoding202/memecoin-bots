@@ -2,12 +2,12 @@
 
 Fake $1,000. Buys tokens up 5–60% in the last hour with $20,000+ volume, 10% of equity per trade, at most 5 open. Exits at a 40% stop or a 150% target.
 
-Started Oct 10 14:42 UTC, 1.2 days ago. Updated Oct 11 20:23 UTC. Tracking 81 tokens that passed the rug filter, out of 188 seen.
+Started Oct 10 14:42 UTC, 1.4 days ago. Updated Oct 11 23:47 UTC. Tracking 84 tokens that passed the rug filter, out of 199 seen.
 
 |                | Bot One | Random entries, same tokens and rules |
 | -------------- | ------- | ------------------------------------- |
-| Return         | **+21.9%** | median -1.4% (range -15.3% to +29.5%) |
-| Closed trades  | 6 | median 2 |
+| Return         | **+22.4%** | median -2.6% (range -15.9% to +32.4%) |
+| Closed trades  | 6 | median 2.5 |
 | Win rate       | 33% | |
 | Stops hit      | 4 | |
 | Max drawdown   | 11.5% | |
@@ -17,11 +17,11 @@ Started Oct 10 14:42 UTC, 1.2 days ago. Updated Oct 11 20:23 UTC. Tracking 81 to
 
 | Token | Bought (UTC) | P&L |
 | ----- | ------------ | --- |
-| SI276 | Oct 10 14:45 | +33.6% |
-| Frank | Oct 10 14:45 | +33.5% |
-| PAID | Oct 11 06:15 | -15.3% |
-| SLOPCORE | Oct 11 09:15 | -9.5% |
-| HIGGS | Oct 11 09:55 | +30.1% |
+| SI276 | Oct 10 14:45 | +38.6% |
+| Frank | Oct 10 14:45 | +28.6% |
+| PAID | Oct 11 06:15 | +0.1% |
+| SLOPCORE | Oct 11 09:15 | -16.5% |
+| HIGGS | Oct 11 09:55 | +26.5% |
 
 ## Last 20 closed trades
 
