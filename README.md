@@ -2,14 +2,14 @@
 
 Fake $1,000. Buys tokens up 5–60% in the last hour with $20,000+ volume, 10% of equity per trade, at most 5 open. Exits at a 40% stop or a 150% target.
 
-Started Oct 10 14:42 UTC, 0.4 days ago. Updated Oct 10 23:39 UTC. Tracking 57 tokens that passed the rug filter, out of 122 seen.
+Started Oct 10 14:42 UTC, 0.6 days ago. Updated Oct 11 05:59 UTC. Tracking 69 tokens that passed the rug filter, out of 151 seen.
 
 |                | Bot One | Random entries, same tokens and rules |
 | -------------- | ------- | ------------------------------------- |
-| Return         | **+4.5%** | median +0.1% (range -7.7% to +18.5%) |
-| Closed trades  | 2 | median 0.5 |
-| Win rate       | 50% | |
-| Stops hit      | 1 | |
+| Return         | **+4.9%** | median +0.3% (range -12.2% to +18.4%) |
+| Closed trades  | 3 | median 1 |
+| Win rate       | 33% | |
+| Stops hit      | 2 | |
 | Max drawdown   | 10.2% | |
 | Open positions | 5 | |
 
@@ -17,16 +17,17 @@ Started Oct 10 14:42 UTC, 0.4 days ago. Updated Oct 10 23:39 UTC. Tracking 57 to
 
 | Token | Bought (UTC) | P&L |
 | ----- | ------------ | --- |
-| SI276 | Oct 10 14:45 | -24.3% |
-| Frank | Oct 10 14:45 | -18.6% |
-| TWEETCRAFT | Oct 10 14:45 | -9.7% |
-| DRMR | Oct 10 15:10 | +2.2% |
-| QUBIT | Oct 10 22:25 | -9.2% |
+| SI276 | Oct 10 14:45 | -3.9% |
+| Frank | Oct 10 14:45 | +9.8% |
+| DRMR | Oct 10 15:10 | +6.5% |
+| QUBIT | Oct 10 22:25 | +5.9% |
+| API | Oct 11 01:40 | -32.1% |
 
 ## Last 20 closed trades
 
 | Token | Bought (UTC) | Sold (UTC) | P&L | Why |
 | ----- | ------------ | ---------- | --- | --- |
+| TWEETCRAFT | Oct 10 14:45 | Oct 11 01:40 | -40.6% ($-40.52) | stop |
 | PQC | Oct 10 14:50 | Oct 10 22:25 | -40.6% ($-40.48) | stop |
 | Tschuna | Oct 10 15:00 | Oct 10 15:05 | +147.5% ($+145.13) | take profit |
 
