@@ -2,31 +2,33 @@
 
 Fake $1,000. Buys tokens up 5–60% in the last hour with $20,000+ volume, 10% of equity per trade, at most 5 open. Exits at a 40% stop or a 150% target.
 
-Started Oct 10 14:42 UTC, 1.6 days ago. Updated Oct 12 06:10 UTC. Tracking 87 tokens that passed the rug filter, out of 218 seen.
+Started Oct 10 14:42 UTC, 2.1 days ago. Updated Oct 12 18:02 UTC. Tracking 95 tokens that passed the rug filter, out of 241 seen.
 
 |                | Bot One | Random entries, same tokens and rules |
 | -------------- | ------- | ------------------------------------- |
-| Return         | **+21.2%** | median -1.6% (range -15.6% to +14.8%) |
-| Closed trades  | 6 | median 2 |
-| Win rate       | 33% | |
-| Stops hit      | 4 | |
-| Max drawdown   | 11.5% | |
+| Return         | **+9.5%** | median -6.7% (range -23.5% to +18.7%) |
+| Closed trades  | 8 | median 3 |
+| Win rate       | 25% | |
+| Stops hit      | 6 | |
+| Max drawdown   | 15.9% | |
 | Open positions | 5 | |
 
 ## Open positions
 
 | Token | Bought (UTC) | P&L |
 | ----- | ------------ | --- |
-| SI276 | Oct 10 14:45 | +41.5% |
-| Frank | Oct 10 14:45 | +23.1% |
-| PAID | Oct 11 06:15 | -1.2% |
-| SLOPCORE | Oct 11 09:15 | -19.1% |
-| HIGGS | Oct 11 09:55 | +21.6% |
+| SI276 | Oct 10 14:45 | +5.6% |
+| Frank | Oct 10 14:45 | +38.5% |
+| PAID | Oct 11 06:15 | +11.2% |
+| HIGGS | Oct 11 09:55 | -5.5% |
+| JEANPHIL | Oct 12 15:35 | -8.8% |
 
 ## Last 20 closed trades
 
 | Token | Bought (UTC) | Sold (UTC) | P&L | Why |
 | ----- | ------------ | ---------- | --- | --- |
+| DOPE | Oct 12 13:45 | Oct 12 15:25 | -40.6% ($-46.34) | stop |
+| SLOPCORE | Oct 11 09:15 | Oct 12 13:40 | -40.6% ($-41.09) | stop |
 | DRMR | Oct 10 15:10 | Oct 11 09:55 | +147.5% ($+164.34) | take profit |
 | QUBIT | Oct 10 22:25 | Oct 11 09:15 | -40.6% ($-42.31) | stop |
 | API | Oct 11 01:40 | Oct 11 06:10 | -40.6% ($-43.24) | stop |
