@@ -2,26 +2,26 @@
 
 Fake $1,000. Buys tokens up 5–60% in the last hour with $20,000+ volume, 10% of equity per trade, at most 5 open. Exits at a 40% stop or a 150% target.
 
-Started Oct 10 14:42 UTC, 2.1 days ago. Updated Oct 12 18:02 UTC. Tracking 95 tokens that passed the rug filter, out of 241 seen.
+Started Oct 10 14:42 UTC, 2.5 days ago. Updated Oct 13 02:06 UTC. Tracking 100 tokens that passed the rug filter, out of 257 seen.
 
 |                | Bot One | Random entries, same tokens and rules |
 | -------------- | ------- | ------------------------------------- |
-| Return         | **+9.5%** | median -6.7% (range -23.5% to +18.7%) |
+| Return         | **+5.0%** | median -9.1% (range -22.1% to +12.0%) |
 | Closed trades  | 8 | median 3 |
 | Win rate       | 25% | |
 | Stops hit      | 6 | |
-| Max drawdown   | 15.9% | |
+| Max drawdown   | 19.1% | |
 | Open positions | 5 | |
 
 ## Open positions
 
 | Token | Bought (UTC) | P&L |
 | ----- | ------------ | --- |
-| SI276 | Oct 10 14:45 | +5.6% |
-| Frank | Oct 10 14:45 | +38.5% |
-| PAID | Oct 11 06:15 | +11.2% |
-| HIGGS | Oct 11 09:55 | -5.5% |
-| JEANPHIL | Oct 12 15:35 | -8.8% |
+| SI276 | Oct 10 14:45 | +5.2% |
+| Frank | Oct 10 14:45 | +8.7% |
+| PAID | Oct 11 06:15 | +10.3% |
+| HIGGS | Oct 11 09:55 | -15.0% |
+| JEANPHIL | Oct 12 15:35 | -11.7% |
 
 ## Last 20 closed trades
 
