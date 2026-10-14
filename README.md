@@ -2,14 +2,14 @@
 
 Fake $1,000. Buys tokens up 5–60% in the last hour with $20,000+ volume, 10% of equity per trade, at most 5 open. Exits at a 40% stop or a 150% target.
 
-Started Oct 10 14:42 UTC, 3.4 days ago. Updated Oct 13 23:45 UTC. Tracking 117 tokens that passed the rug filter, out of 310 seen.
+Started Oct 10 14:42 UTC, 3.6 days ago. Updated Oct 14 05:03 UTC. Tracking 121 tokens that passed the rug filter, out of 320 seen.
 
 |                | Bot One | Random entries, same tokens and rules |
 | -------------- | ------- | ------------------------------------- |
-| Return         | **+11.9%** | median -10.3% (range -30.1% to +7.7%) |
-| Closed trades  | 10 | median 5 |
-| Win rate       | 30% | |
-| Stops hit      | 7 | |
+| Return         | **+4.9%** | median -10.3% (range -27.3% to +32.1%) |
+| Closed trades  | 12 | median 5.5 |
+| Win rate       | 25% | |
+| Stops hit      | 9 | |
 | Max drawdown   | 20.5% | |
 | Open positions | 5 | |
 
@@ -17,16 +17,18 @@ Started Oct 10 14:42 UTC, 3.4 days ago. Updated Oct 13 23:45 UTC. Tracking 117 t
 
 | Token | Bought (UTC) | P&L |
 | ----- | ------------ | --- |
-| SI276 | Oct 10 14:45 | -3.8% |
-| Frank | Oct 10 14:45 | -23.3% |
-| PAID | Oct 11 06:15 | -14.3% |
-| JEANPHIL | Oct 12 15:35 | +1.4% |
-| HUMPH | Oct 13 23:30 | +0.5% |
+| SI276 | Oct 10 14:45 | +5.2% |
+| PAID | Oct 11 06:15 | -11.2% |
+| JEANPHIL | Oct 12 15:35 | -3.4% |
+| REA | Oct 14 00:50 | +1.8% |
+| DOPE | Oct 14 02:55 | -15.3% |
 
 ## Last 20 closed trades
 
 | Token | Bought (UTC) | Sold (UTC) | P&L | Why |
 | ----- | ------------ | ---------- | --- | --- |
+| Frank | Oct 10 14:45 | Oct 14 02:50 | -40.6% ($-40.56) | stop |
+| HUMPH | Oct 13 23:30 | Oct 14 00:50 | -40.6% ($-45.16) | stop |
 | VEIL | Oct 13 15:45 | Oct 13 23:25 | +147.5% ($+150.94) | take profit |
 | HIGGS | Oct 11 09:55 | Oct 13 15:45 | -40.6% ($-47.34) | stop |
 | DOPE | Oct 12 13:45 | Oct 12 15:25 | -40.6% ($-46.34) | stop |
