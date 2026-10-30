@@ -2,12 +2,12 @@
 
 Fake $1,000. Buys tokens up 5–60% in the last hour with $20,000+ volume, 10% of equity per trade, at most 5 open. Exits at a 40% stop or a 150% target.
 
-Started Oct 10 14:42 UTC, 18.6 days ago. Updated Oct 29 05:59 UTC. Tracking 438 tokens that passed the rug filter, out of 1074 seen.
+Started Oct 10 14:42 UTC, 20.3 days ago. Updated Oct 30 20:53 UTC. Tracking 469 tokens that passed the rug filter, out of 1112 seen.
 
 |                | Bot One | Random entries, same tokens and rules |
 | -------------- | ------- | ------------------------------------- |
-| Return         | **-6.6%** | median -8.4% (range -32.9% to +24.1%) |
-| Closed trades  | 14 | median 7 |
+| Return         | **-6.6%** | median -13.9% (range -34.8% to +24.1%) |
+| Closed trades  | 14 | median 6.5 |
 | Win rate       | 21% | |
 | Stops hit      | 11 | |
 | Max drawdown   | 28.2% | |
