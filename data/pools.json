@@ -6942,6 +6942,21 @@
   "symbol": "GTA 6 Coin",
   "tracked": false
  },
+ "7xD715GeUY4ksAEx8eWeWyXMcYHwNk1pMp2kjpwhpump": {
+  "created_at": 1793916401.0,
+  "first_seen": 1793948392.2309952,
+  "liquidity_usd": 2232320.7053,
+  "pool": "7pEQrz33G1gq6BzfHXShesg59ghbeFbVPXFSbUfmnew6",
+  "rug": {
+   "danger_risks": [],
+   "lp_lock_days": Infinity,
+   "lp_locked_pct": 100.0,
+   "max_holder_pct": 0.04992579177613433,
+   "top10_holder_pct": 0.49925791776134326
+  },
+  "symbol": "XTO",
+  "tracked": true
+ },
  "7xJFt4q4LPcCUnfJhCgJhbGG9FE3y6ptxU4EgGJUpump": {
   "created_at": 1792760722.0,
   "first_seen": 1792762533.1635754,
@@ -8018,6 +8033,27 @@
    "top10_holder_pct": 15.4968109333872
   },
   "symbol": "STOKEN",
+  "tracked": false
+ },
+ "8xXQpiy4HwkZMdsZqycutE6xLJ8hKyjgVCWqcgDMBCV": {
+  "created_at": 1793947064.0,
+  "first_seen": 1793948392.2309952,
+  "liquidity_usd": 154835.6417,
+  "pool": "37dVMDYU69sZCTxCGqbot7NWNyDAgYAPnyM4eYUNDj8a",
+  "rug": {
+   "danger_risks": [
+    "Top 10 holders high ownership",
+    "Single holder ownership",
+    "Single holder ownership",
+    "Low Liquidity",
+    "High ownership"
+   ],
+   "lp_lock_days": Infinity,
+   "lp_locked_pct": 100.0,
+   "max_holder_pct": 47.46423059832346,
+   "top10_holder_pct": 99.99550776827913
+  },
+  "symbol": "coin",
   "tracked": false
  },
  "8zu4jtmPogv3TQ1MEosD7EYCRu9Avxg6vNRjzZoFpump": {
@@ -9307,6 +9343,23 @@
    "top10_holder_pct": 16.958906287862735
   },
   "symbol": "TikTok US",
+  "tracked": false
+ },
+ "9z3RybP1GJhhQApnN1qZ7suNGqK9tbFH6M1Yy34Kzc7v": {
+  "created_at": 1793940129.0,
+  "first_seen": 1793948392.2309952,
+  "liquidity_usd": 93215.1323,
+  "pool": "DZX6c7TFKeJf6nU7bA7JxZBtbwyXz7U1siQ5jqG6hVc8",
+  "rug": {
+   "danger_risks": [
+    "Large Amount of LP Unlocked"
+   ],
+   "lp_lock_days": Infinity,
+   "lp_locked_pct": 1.7347948744608346e-09,
+   "max_holder_pct": 19.7769751044995,
+   "top10_holder_pct": 42.453304276848
+  },
+  "symbol": "LEAP",
   "tracked": false
  },
  "9zvMmVxDsdA9q4uQ64gdGeTqcUD9gQ1xQi7kTH6ppump": {
@@ -15008,6 +15061,21 @@
   "symbol": "Altai",
   "tracked": true
  },
+ "FDqBGHbQpjq2exkHBGevDLa7SuYNzcC5XsipauMpump": {
+  "created_at": 1793900849.0,
+  "first_seen": 1793948392.2309952,
+  "liquidity_usd": 1213583.4764,
+  "pool": "6izpZ4c9wQYoee9khxRLW7xjP1s7e4nyRJ51HTwwMuYs",
+  "rug": {
+   "danger_risks": [],
+   "lp_lock_days": Infinity,
+   "lp_locked_pct": 100.0,
+   "max_holder_pct": 0.05009976399602559,
+   "top10_holder_pct": 0.5009974883818707
+  },
+  "symbol": "FOTF",
+  "tracked": true
+ },
  "FEXGegqeVm5vZurqyC7qsmkLqWspVV1ACb9bbLvcpump": {
   "created_at": 1793199727.0,
   "first_seen": 1793221837.17745,
@@ -16183,6 +16251,21 @@
   "symbol": "DOPE",
   "tracked": true
  },
+ "GNggUoCrkgcshssMFn1AxRGEeiNpS7fFaLJMEbSWpump": {
+  "created_at": 1793873622.0,
+  "first_seen": 1793948392.2309952,
+  "liquidity_usd": 414073.271,
+  "pool": "AyqR8jMfFL8KMXoEJcGcX2VMThs7hMXUurG22KytaYfB",
+  "rug": {
+   "danger_risks": [],
+   "lp_lock_days": Infinity,
+   "lp_locked_pct": 100.0,
+   "max_holder_pct": 0.19831297145509338,
+   "top10_holder_pct": 1.983129714550934
+  },
+  "symbol": "BTX",
+  "tracked": true
+ },
  "GPoQw1aBxK8KM9oqKQJWPrN8qzDfesfyGNZE5Xt6pump": {
   "created_at": 1792633011.0,
   "first_seen": 1792677284.6537707,
@@ -16464,6 +16547,21 @@
   },
   "symbol": "XTO",
   "tracked": false
+ },
+ "GdY4Z6pYUcr3HFrABV5FEZay3J4GnjN1Uzsw6Dvxpump": {
+  "created_at": 1793922576.0,
+  "first_seen": 1793948392.2309952,
+  "liquidity_usd": 55309.7206,
+  "pool": "GaCmBdqtW7HbUEv6BWe583Yxw5gS9gjGr59GYmvygTRi",
+  "rug": {
+   "danger_risks": [],
+   "lp_lock_days": Infinity,
+   "lp_locked_pct": 100.0,
+   "max_holder_pct": 3.0380229089929363,
+   "top10_holder_pct": 20.45905967513489
+  },
+  "symbol": "coin",
+  "tracked": true
  },
  "GePXefzRNUT92fcn5u8VfXpPPc9BhCmyPefKW2MRpump": {
   "created_at": 1793465543.0,
@@ -19593,6 +19691,21 @@
   "symbol": "\u7279\u65af\u62c9\u80fd\u98de",
   "tracked": false
  },
+ "R9T6QHxeYMPQAqeHLuSnqT6DijiAfofsm7CByPppump": {
+  "created_at": 1793842295.0,
+  "first_seen": 1793948392.2309952,
+  "liquidity_usd": 1751791.9024,
+  "pool": "777XTAnPNWuArN7ghBcnt3s93SYbs8vVjBf3gw1Cw3xT",
+  "rug": {
+   "danger_risks": [],
+   "lp_lock_days": Infinity,
+   "lp_locked_pct": 100.0,
+   "max_holder_pct": 4.025035309652551,
+   "top10_holder_pct": 5.852857253980416
+  },
+  "symbol": "USOE",
+  "tracked": true
+ },
  "RMbMtsy3Kqm6dqEoiV19dRVY8ckS9gNUcWW9LVtpump": {
   "created_at": 1792248606.0,
   "first_seen": 1792251808.0295675,
@@ -19606,6 +19719,27 @@
    "top10_holder_pct": 16.53356298397517
   },
   "symbol": "HULKED",
+  "tracked": false
+ },
+ "RPajMZAMyxsydym8LweXtyXwnrGA6U2dF9ABgdEPo7D": {
+  "created_at": 1793930975.0,
+  "first_seen": 1793948392.2309952,
+  "liquidity_usd": 138382.8007,
+  "pool": "Z8wyd4FnSvbypo69L8mvChwEJTxipCXAyhWjijy3YJu",
+  "rug": {
+   "danger_risks": [
+    "Top 10 holders high ownership",
+    "Single holder ownership",
+    "Single holder ownership",
+    "Low Liquidity",
+    "High ownership"
+   ],
+   "lp_lock_days": Infinity,
+   "lp_locked_pct": 100.0,
+   "max_holder_pct": 45.88181017666028,
+   "top10_holder_pct": 99.99590337785381
+  },
+  "symbol": "Diamond",
   "tracked": false
  },
  "RUVvE6zz46X3i2X5xarAqPG1bWetDQPV3FP8uH9pump": {
@@ -21220,6 +21354,21 @@
   "symbol": "X",
   "tracked": false
  },
+ "m5HMYZjQyTquyfonBm5aEQZm9gjJY5ryeWfVpMJpump": {
+  "created_at": 1793928764.0,
+  "first_seen": 1793948392.2309952,
+  "liquidity_usd": 998273.9087,
+  "pool": "6Z9Z9pnb8oqKdbwvF8cNJZesbmWnYQqCdxjLVN2NqeiV",
+  "rug": {
+   "danger_risks": [],
+   "lp_lock_days": Infinity,
+   "lp_locked_pct": 100.0,
+   "max_holder_pct": 0.07931096446909813,
+   "top10_holder_pct": 0.5303093319720901
+  },
+  "symbol": "USDP",
+  "tracked": true
+ },
  "mCvz6xFN5W26ej8uAaUWtZFAtXWss7gJF1hYvJTpump": {
   "created_at": 1793461181.0,
   "first_seen": 1793489305.268575,
@@ -21362,6 +21511,21 @@
   },
   "symbol": "ASTER",
   "tracked": false
+ },
+ "oCZHH8HnEBCPipEGdEcP3f45pQAaM7nh7P6EkRPpump": {
+  "created_at": 1793932261.0,
+  "first_seen": 1793948392.2309952,
+  "liquidity_usd": 117725.882,
+  "pool": "6ZV8dyRdxH56Au2EbhpZZBMKpRP5ixBKPRJ7hB2pJ3rr",
+  "rug": {
+   "danger_risks": [],
+   "lp_lock_days": Infinity,
+   "lp_locked_pct": 100.0,
+   "max_holder_pct": 0.13271480281393666,
+   "top10_holder_pct": 1.3097578977973874
+  },
+  "symbol": "AMD",
+  "tracked": true
  },
  "oF2XvGAX3v8VCNje6yMxJqQZraXz2hPth2kPg7ypump": {
   "created_at": 1792264658.0,
@@ -21635,6 +21799,36 @@
    "top10_holder_pct": 0.9145683696276912
   },
   "symbol": "ATFS",
+  "tracked": true
+ },
+ "reb3NpuqZ59cWNrt1En1nTQADvQ28pL4qRQDjX2pump": {
+  "created_at": 1793888078.0,
+  "first_seen": 1793948392.2309952,
+  "liquidity_usd": 1287686.0654,
+  "pool": "FAcQmzR3Ydpg7NVhd66ZJ1YAojGGfF28FJw3r2nTT6t",
+  "rug": {
+   "danger_risks": [],
+   "lp_lock_days": Infinity,
+   "lp_locked_pct": 100.0,
+   "max_holder_pct": 0.053512942200470405,
+   "top10_holder_pct": 0.5034065886680601
+  },
+  "symbol": "NATF",
+  "tracked": true
+ },
+ "ruM3hqcaCnXysQBd3z68EDxwHAgqb9NET3bekgZpump": {
+  "created_at": 1793899277.0,
+  "first_seen": 1793948392.2309952,
+  "liquidity_usd": 1724220.4447,
+  "pool": "2c7GxQgLMwAx5TQznQg2T5HuoiWMnyX1mSp4qbmVbbtU",
+  "rug": {
+   "danger_risks": [],
+   "lp_lock_days": Infinity,
+   "lp_locked_pct": 100.0,
+   "max_holder_pct": 0.02269211091719645,
+   "top10_holder_pct": 0.22692110629465345
+  },
+  "symbol": "UODF",
   "tracked": true
  },
  "sTDhVCEoFjvc5W1GB4cQiGwBR9VGFLBbHZjetbc11C8": {
